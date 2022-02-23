@@ -16,14 +16,14 @@ class PreguntasController (private val preguntasRepository: PreguntasRepository)
     }
     //curl --request GET --header "Content-type:application/json; charset=utf-8" --data "Mensa" localhost:8083/descargarFiltrado
     @GetMapping("descargarFiltrado")
-    fun filtrado(@RequestBody texto: String): MutableList<Preguntas>{
-        var listaMensajeFiltrado = mutableListOf<Preguntas>()
+    fun filtrado(@RequestBody texto: String): MensajesFiltrados{
+        var filtrado = MensajesFiltrados()
         preguntasRepository.findAll().forEach {
             if (it.mensaje.contains(texto)){
-                listaMensajeFiltrado.add(it)
+                filtrado.listaMensajesFiltrados.add(it)
             }
         }
-        return listaMensajeFiltrado
+        return filtrado
     }
 
     /*
@@ -43,7 +43,7 @@ class PreguntasController (private val preguntasRepository: PreguntasRepository)
     fun delete(): Boolean{
         var borrado= false
         preguntasRepository.findAll().forEach {
-            if (it.mensaje == " "){
+            if (it.mensaje == ""){
                 borrado = true
                 preguntasRepository.delete(it)
             }else{

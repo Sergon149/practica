@@ -17,3 +17,11 @@ data class Preguntas (var mensaje: String){
         return gson.toJson(this)
     }
 }
+class MensajesFiltrados() {
+    val listaMensajesFiltrados = mutableListOf<Preguntas>()
+    override fun toString(): String {
+        val gson = Gson()
+        return gson.toJson(this)
+
+    }
+}

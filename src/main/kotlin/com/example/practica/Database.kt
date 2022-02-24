@@ -21,9 +21,9 @@ class Database {
                 Preguntas (""),
                 Preguntas ("?")
             )
-            listaMensajes.forEach { println(it) }
 
             listaMensajes.forEach { preguntasRepository.save(it) }
+            listaMensajes.forEach { println(it) }
 
             println("BASE DE DATOS CREADA CON EXITO ------------------------------")
         }

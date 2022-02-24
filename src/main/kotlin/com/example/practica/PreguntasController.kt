@@ -16,14 +16,17 @@ class PreguntasController (private val preguntasRepository: PreguntasRepository)
     }
     //curl --request GET --header "Content-type:application/json; charset=utf-8" --data "Mensa" localhost:8083/descargarFiltrado
     @GetMapping("descargarFiltrado")
-    fun filtrado(@RequestBody texto: String): MensajesFiltrados{
+    fun filtrado(@RequestBody texto: String): Any{
         var filtrado = MensajesFiltrados()
         preguntasRepository.findAll().forEach {
             if (it.mensaje.contains(texto)){
                 filtrado.listaMensajesFiltrados.add(it)
             }
         }
-        return filtrado
+        return if (filtrado.listaMensajesFiltrados.size>0)
+            filtrado
+        else
+            "ERROR NOT FOUND"
     }
 
     /*
@@ -54,19 +57,32 @@ class PreguntasController (private val preguntasRepository: PreguntasRepository)
     }
 
     @GetMapping("Ultimos10")
-    fun ultimos(): MutableList<Preguntas>{
-        return preguntasRepository.findAll()
+    fun ultimos(): MensajesFiltrados {
+        val listaUltimos = MensajesFiltrados()
+
+        listaUltimos.listaMensajesFiltrados.addAll(preguntasRepository.findAll())
+
+        return if (listaUltimos.listaMensajesFiltrados.size>10){
+            listaUltimos.listaMensajesFiltrados.filter { it.id > (listaUltimos.listaMensajesFiltrados.size-10) }
+            listaUltimos
+        }else{
+            listaUltimos
+        }
     }
 
     @GetMapping("rango/{inicio}/{fin}")
-    fun range(@PathVariable ini:Int, @PathVariable fin: Int) {
-        preguntasRepository.findById(ini)
+    fun range(@PathVariable ini:Int, @PathVariable fin: Int): List<Preguntas> {
+        val listafiltrada = preguntasRepository.findAll().filter {
+            it.id in ini..fin
+        }
+        return listafiltrada
     }
 
     @GetMapping("show")
     fun show():MutableList<Preguntas>{
         return preguntasRepository.findAll()
     }
+}
     /*
     //curl -v --request GET --data "{\"id\":1, \"nombre\":\"Caterpie\", \"nivel\":5}" http://localhost:8083/insertPokemonBody
     @GetMapping("insertPokemonBody")
@@ -77,4 +93,3 @@ class PreguntasController (private val preguntasRepository: PreguntasRepository)
         pokemonRepository.findAll().forEach { println(it)}
     }
     */
-}

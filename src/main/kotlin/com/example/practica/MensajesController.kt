@@ -7,12 +7,11 @@ class MensajesController (private val mensajesRepository: MensajesRepository){
 
     //curl --request POST --header "Content-type:application/json; charset=utf-8" --data "Mensaje inicio" localhost:8083/publicarTexto
     @PostMapping("publicarTexto")
-    fun publicar(@RequestBody texto: String): SinRespuesta{
+    fun publicar(@RequestBody texto: String): SinRespuesta {
         val mensa = Mensajes(texto, "")
         mensajesRepository.save(mensa)
         println(mensa)
-        var añadir = SinRespuesta(mensa.id,texto)
-        return añadir
+        return SinRespuesta(mensa.id, texto)
     }
 
 
@@ -20,10 +19,12 @@ class MensajesController (private val mensajesRepository: MensajesRepository){
     //curl --request GET --header "Content-type:application/json; charset=utf-8" --data "Mensa" localhost:8083/descargarFiltrado
     @GetMapping("descargarFiltrado")
     fun filtrado(@RequestBody texto: String): Any{
-        var filtrado = MensajesFiltrados()
+        val filtrado = MensajesFiltrados()
+
         mensajesRepository.findAll().forEach {
             if (it.mensaje.contains(texto)){
-                filtrado.listaMensajesFiltrados.add(it)
+                val buscar = SinRespuesta(it.id, it.mensaje)
+                filtrado.listaMensajesFiltrados.add(buscar)
             }
         }
         return if (filtrado.listaMensajesFiltrados.size>0)
@@ -61,24 +62,26 @@ class MensajesController (private val mensajesRepository: MensajesRepository){
 
     @GetMapping("Ultimos10")
     fun ultimos(): MensajesFiltrados {
-        var listaUltimos = MensajesFiltrados()
+        val listaUltimos = MensajesFiltrados()
         var cont = 0
 
         mensajesRepository.findAll().asReversed().forEach {
             if (cont < 11){
-                listaUltimos.listaMensajesFiltrados.add(it)
+                val buscar = SinRespuesta(it.id, it.mensaje)
+                listaUltimos.listaMensajesFiltrados.add(buscar)
             }
             cont++
         }
         return listaUltimos
     }
 
-    @GetMapping("rango/{inicio}/{fin}")
+    @GetMapping("rango/{ini}/{fin}")
     fun range(@PathVariable ini:Int, @PathVariable fin: Int): MensajesFiltrados {
-        var rango = MensajesFiltrados()
+        val rango = MensajesFiltrados()
         mensajesRepository.findAll().forEach {
             if(it.id in ini..fin){
-                rango.listaMensajesFiltrados.add(it)
+                val buscar = SinRespuesta(it.id, it.mensaje)
+                rango.listaMensajesFiltrados.add(buscar)
             }
         }
         return rango
@@ -86,7 +89,7 @@ class MensajesController (private val mensajesRepository: MensajesRepository){
 
     @GetMapping("responder/{idmensa}/{res}")
     fun responder(@PathVariable idmensa: Int, @PathVariable res: String): Any{
-        var todo = mensajesRepository.getById(idmensa)
+        val todo = mensajesRepository.getById(idmensa)
 
         return if(todo.respuesta==""){
             todo.respuesta=res

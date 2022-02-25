@@ -7,22 +7,22 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class Database {
     @Bean
-    fun initDatabase(preguntasRepository: PreguntasRepository):CommandLineRunner{
+    fun initDatabase(mensajesRepository: MensajesRepository):CommandLineRunner{
         return CommandLineRunner{
             println("BASE DE DATOS CREANDOSE --------------------------")
             val listaMensajes = listOf(
-                Preguntas ("hola"),
-                Preguntas (""),
-                Preguntas ("que"),
-                Preguntas (""),
-                Preguntas ("tal"),
-                Preguntas (""),
-                Preguntas ("estas"),
-                Preguntas (""),
-                Preguntas ("?")
+                Mensajes ("hola", ""),
+                Mensajes ("", ""),
+                Mensajes ("que", ""),
+                Mensajes ("", ""),
+                Mensajes ("tal", ""),
+                Mensajes ("", ""),
+                Mensajes ("estas", ""),
+                Mensajes ("", ""),
+                Mensajes ("?", "")
             )
 
-            listaMensajes.forEach { preguntasRepository.save(it) }
+            listaMensajes.forEach { mensajesRepository.save(it) }
             listaMensajes.forEach { println(it) }
 
             println("BASE DE DATOS CREADA CON EXITO ------------------------------")

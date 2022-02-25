@@ -1,24 +1,27 @@
 package com.example.practica
 
-import com.google.gson.Gson
 import org.springframework.web.bind.annotation.*
 
 @RestController
-class PreguntasController (private val preguntasRepository: PreguntasRepository){
+class MensajesController (private val mensajesRepository: MensajesRepository){
 
     //curl --request POST --header "Content-type:application/json; charset=utf-8" --data "Mensaje inicio" localhost:8083/publicarTexto
     @PostMapping("publicarTexto")
-    fun publicar(@RequestBody texto: String): Preguntas{
-        val preg = Preguntas(texto)
-        preguntasRepository.save(preg)
-        println(preg)
-        return preg
+    fun publicar(@RequestBody texto: String): SinRespuesta{
+        val mensa = Mensajes(texto, "")
+        mensajesRepository.save(mensa)
+        println(mensa)
+        var añadir = SinRespuesta(mensa.id,texto)
+        return añadir
     }
+
+
+
     //curl --request GET --header "Content-type:application/json; charset=utf-8" --data "Mensa" localhost:8083/descargarFiltrado
     @GetMapping("descargarFiltrado")
     fun filtrado(@RequestBody texto: String): Any{
         var filtrado = MensajesFiltrados()
-        preguntasRepository.findAll().forEach {
+        mensajesRepository.findAll().forEach {
             if (it.mensaje.contains(texto)){
                 filtrado.listaMensajesFiltrados.add(it)
             }
@@ -45,10 +48,10 @@ class PreguntasController (private val preguntasRepository: PreguntasRepository)
     @GetMapping("borrar")
     fun delete(): Boolean{
         var borrado= false
-        preguntasRepository.findAll().forEach {
+        mensajesRepository.findAll().forEach {
             if (it.mensaje == ""){
                 borrado = true
-                preguntasRepository.delete(it)
+                mensajesRepository.delete(it)
             }else{
                 borrado=false
             }
@@ -58,29 +61,45 @@ class PreguntasController (private val preguntasRepository: PreguntasRepository)
 
     @GetMapping("Ultimos10")
     fun ultimos(): MensajesFiltrados {
-        val listaUltimos = MensajesFiltrados()
+        var listaUltimos = MensajesFiltrados()
+        var cont = 0
 
-        listaUltimos.listaMensajesFiltrados.addAll(preguntasRepository.findAll())
-
-        return if (listaUltimos.listaMensajesFiltrados.size>10){
-            listaUltimos.listaMensajesFiltrados.filter { it.id > (listaUltimos.listaMensajesFiltrados.size-10) }
-            listaUltimos
-        }else{
-            listaUltimos
+        mensajesRepository.findAll().asReversed().forEach {
+            if (cont < 11){
+                listaUltimos.listaMensajesFiltrados.add(it)
+            }
+            cont++
         }
+        return listaUltimos
     }
 
     @GetMapping("rango/{inicio}/{fin}")
-    fun range(@PathVariable ini:Int, @PathVariable fin: Int): List<Preguntas> {
-        val listafiltrada = preguntasRepository.findAll().filter {
-            it.id in ini..fin
+    fun range(@PathVariable ini:Int, @PathVariable fin: Int): MensajesFiltrados {
+        var rango = MensajesFiltrados()
+        mensajesRepository.findAll().forEach {
+            if(it.id in ini..fin){
+                rango.listaMensajesFiltrados.add(it)
+            }
         }
-        return listafiltrada
+        return rango
+    }
+
+    @GetMapping("responder/{idmensa}/{res}")
+    fun responder(@PathVariable idmensa: Int, @PathVariable res: String): Any{
+        var todo = mensajesRepository.getById(idmensa)
+
+        return if(todo.respuesta==""){
+            todo.respuesta=res
+            mensajesRepository.save(todo)
+            todo
+        }else{
+            "Ya existe una respuesta para este id, que contiene "+todo.respuesta
+        }
     }
 
     @GetMapping("show")
-    fun show():MutableList<Preguntas>{
-        return preguntasRepository.findAll()
+    fun show():MutableList<Mensajes>{
+        return mensajesRepository.findAll()
     }
 }
     /*

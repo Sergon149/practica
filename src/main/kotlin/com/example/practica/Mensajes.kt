@@ -6,7 +6,7 @@ import javax.persistence.GeneratedValue
 import javax.persistence.Id
 
 @Entity
-data class Mensajes (var mensaje: String, var respuesta: String){
+data class Mensajes(var mensaje: String, var respuesta: ArrayList<String>){
 
     @Id
     @GeneratedValue

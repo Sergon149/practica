@@ -8,7 +8,8 @@ class MensajesController (private val mensajesRepository: MensajesRepository){
     //curl --request POST --header "Content-type:application/json; charset=utf-8" --data "Mensaje inicio" localhost:8083/publicarTexto
     @PostMapping("publicarTexto")
     fun publicar(@RequestBody texto: String): SinRespuesta {
-        val mensa = Mensajes(texto, "")
+        val respuestas = arrayListOf<String>()
+        val mensa = Mensajes(texto, respuestas)
         mensajesRepository.save(mensa)
         println(mensa)
         return SinRespuesta(mensa.id, texto)
@@ -46,6 +47,7 @@ class MensajesController (private val mensajesRepository: MensajesRepository){
     }
      */
 
+    //http://localhost:8083/borrar
     @GetMapping("borrar")
     fun delete(): Boolean{
         var borrado= false
@@ -60,6 +62,7 @@ class MensajesController (private val mensajesRepository: MensajesRepository){
         return borrado
     }
 
+    //http://localhost:8083/Ultimos10
     @GetMapping("Ultimos10")
     fun ultimos(): MensajesFiltrados {
         val listaUltimos = MensajesFiltrados()
@@ -75,6 +78,7 @@ class MensajesController (private val mensajesRepository: MensajesRepository){
         return listaUltimos
     }
 
+    //http://localhost:8083/rango/2/8
     @GetMapping("rango/{ini}/{fin}")
     fun range(@PathVariable ini:Int, @PathVariable fin: Int): MensajesFiltrados {
         val rango = MensajesFiltrados()
@@ -87,19 +91,28 @@ class MensajesController (private val mensajesRepository: MensajesRepository){
         return rango
     }
 
+    //http://localhost:8083/responder/1/hola
     @GetMapping("responder/{idmensa}/{res}")
     fun responder(@PathVariable idmensa: Int, @PathVariable res: String): Any{
         val todo = mensajesRepository.getById(idmensa)
 
-        return if(todo.respuesta==""){
-            todo.respuesta=res
-            mensajesRepository.save(todo)
-            todo
+        todo.respuesta.add(res)
+        mensajesRepository.save(todo)
+        return todo
+    }
+
+    //http://localhost:8083/responder/1
+    @GetMapping("responder/{id}")
+    fun respondidos(@PathVariable id: Int): Any{
+        val todo = mensajesRepository.getById(id)
+        return if (todo.respuesta.isEmpty()) {
+            "Esta vacia la lista del id $id"
         }else{
-            "Ya existe una respuesta para este id, que contiene "+todo.respuesta
+            todo.respuesta
         }
     }
 
+    //http://localhost:8083/show
     @GetMapping("show")
     fun show():MutableList<Mensajes>{
         return mensajesRepository.findAll()

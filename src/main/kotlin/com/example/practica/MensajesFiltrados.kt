@@ -2,7 +2,7 @@ package com.example.practica
 
 import com.google.gson.Gson
 
-class MensajesFiltrados() {
+class MensajesFiltrados {
     val listaMensajesFiltrados = mutableListOf<SinRespuesta>()
     override fun toString(): String {
         val gson = Gson()

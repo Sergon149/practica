@@ -10,16 +10,17 @@ class Database {
     fun initDatabase(mensajesRepository: MensajesRepository):CommandLineRunner{
         return CommandLineRunner{
             println("BASE DE DATOS CREANDOSE --------------------------")
+            val respuestas = arrayListOf<String>()
             val listaMensajes = listOf(
-                Mensajes ("hola", ""),
-                Mensajes ("", ""),
-                Mensajes ("que", ""),
-                Mensajes ("", ""),
-                Mensajes ("tal", ""),
-                Mensajes ("", ""),
-                Mensajes ("estas", ""),
-                Mensajes ("", ""),
-                Mensajes ("?", "")
+                Mensajes ("hola", respuestas),
+                Mensajes ("", respuestas),
+                Mensajes ("que", respuestas),
+                Mensajes ("", respuestas),
+                Mensajes ("tal", respuestas),
+                Mensajes ("", respuestas),
+                Mensajes ("estas", respuestas),
+                Mensajes ("", respuestas),
+                Mensajes ("?", respuestas)
             )
 
             listaMensajes.forEach { mensajesRepository.save(it) }

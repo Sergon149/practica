@@ -92,6 +92,9 @@ class MensajesController (private val mensajesRepository: MensajesRepository){
     }
 
     //http://localhost:8083/responder/1/hola
+    //http://localhost:8083/responder/1/que
+    //http://localhost:8083/responder/1/tal
+    //http://localhost:8083/responder/1/estas
     @GetMapping("responder/{idmensa}/{res}")
     fun responder(@PathVariable idmensa: Int, @PathVariable res: String): Any{
         val todo = mensajesRepository.getById(idmensa)

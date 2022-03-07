@@ -125,15 +125,14 @@ class MensajesController (private val mensajesRepository: MensajesRepository){
 
     @GetMapping("coincide/{id}")
     fun coincide(@PathVariable id: Int): Any{
-        val igual = MensajesFiltrados()
+        val listarepetidos = mutableListOf<Mensajes>()
         val todo = mensajesRepository.getById(id)
         mensajesRepository.findAll().forEach {
             if (it.respuesta.contains(todo.mensaje)){
-                val buscar = SinRespuesta(it.id, it.mensaje)
-                igual.listaMensajesFiltrados.add(buscar)
+                listarepetidos.add(it)
             }
         }
-        return igual
+        return listarepetidos
     }
 
     @GetMapping("add/{mensaje}")

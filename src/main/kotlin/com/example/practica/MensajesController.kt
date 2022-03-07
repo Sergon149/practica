@@ -1,15 +1,22 @@
 package com.example.practica
 
 import org.springframework.web.bind.annotation.*
+import java.security.MessageDigest
+import java.util.*
+import javax.crypto.Cipher
+import javax.crypto.spec.SecretKeySpec
 
 @RestController
 class MensajesController (private val mensajesRepository: MensajesRepository){
 
+    val type = "AES/ECB/PKCS5Padding"
+    val respuestas = arrayListOf<String>()
+
     //curl --request POST --header "Content-type:application/json; charset=utf-8" --data "Mensaje inicio" localhost:8083/publicarTexto
     @PostMapping("publicarTexto")
     fun publicar(@RequestBody texto: String): SinRespuesta {
-        val respuestas = arrayListOf<String>()
-        val mensa = Mensajes(texto, respuestas)
+
+        val mensa = Mensajes(texto, respuestas, generarkey())
         mensajesRepository.save(mensa)
         println(mensa)
         return SinRespuesta(mensa.id, texto)
@@ -105,8 +112,8 @@ class MensajesController (private val mensajesRepository: MensajesRepository){
         return todo
     }
 
-    //http://localhost:8083/responder/1
-    @GetMapping("responder/{id}")
+    //http://localhost:8083/respuestas/1
+    @GetMapping("respuestas/{id}")
     fun respondidos(@PathVariable id: Int): Any{
         val todo = mensajesRepository.getById(id)
         return if (todo.respuesta.isEmpty()) {
@@ -116,10 +123,94 @@ class MensajesController (private val mensajesRepository: MensajesRepository){
         }
     }
 
+    @GetMapping("coincide/{id}")
+    fun coincide(@PathVariable id: Int): Any{
+        val igual = MensajesFiltrados()
+        val todo = mensajesRepository.getById(id)
+        mensajesRepository.findAll().forEach {
+            if (it.respuesta.contains(todo.mensaje)){
+                val buscar = SinRespuesta(it.id, it.mensaje)
+                igual.listaMensajesFiltrados.add(buscar)
+            }
+        }
+        return igual
+    }
+
+    @GetMapping("add/{mensaje}")
+    fun add(@PathVariable mensaje: String): SinRespuesta{
+        val nuevo = Mensajes(mensaje, respuestas, generarkey())
+        val cif = cifrar(nuevo.mensaje, nuevo.key)
+        nuevo.mensaje = cif
+        mensajesRepository.save(nuevo)
+        println("Hola nuevo:    $nuevo")
+        return SinRespuesta(nuevo.id, nuevo.mensaje)
+    }
+
+    @GetMapping("cifrar/{id}")
+    fun cifrar(@PathVariable id: Int): Mensajes {
+        val cif = mensajesRepository.getById(id)
+        val vuelta = cifrar(cif.mensaje, cif.key)
+        cif.mensaje = vuelta
+        mensajesRepository.save(cif)
+        return cif
+    }
+
+    @GetMapping("descifrar/{id}")
+    fun descifrar(@PathVariable id: Int): Mensajes {
+        val descif = mensajesRepository.getById(id)
+        val vuelta = descifrar(descif.mensaje, descif.key)
+        descif.mensaje = vuelta
+        mensajesRepository.save(descif)
+        return descif
+    }
+
     //http://localhost:8083/show
     @GetMapping("show")
     fun show():MutableList<Mensajes>{
         return mensajesRepository.findAll()
+    }
+
+    fun generarkey(): String {
+        val lista = 'a'..'z'
+        var aux=""
+        var cont=0
+        do {
+            val generar = lista.random()
+            aux += generar
+            cont++
+        }while (cont < 5)
+        return aux
+    }
+
+    private fun cifrar(textoEnString : String, llaveEnString : String) : String {
+        println("Voy a cifrar: $textoEnString")
+        val cipher = Cipher.getInstance(type)
+        cipher.init(Cipher.ENCRYPT_MODE, getKey(llaveEnString))
+        val textCifrado = cipher.doFinal(textoEnString.toByteArray(Charsets.UTF_8))
+        println("Texto cifrado $textCifrado")
+        val textCifradoYEncodado = Base64.getUrlEncoder().encodeToString(textCifrado)
+        println("Texto cifrado y encodado $textCifradoYEncodado")
+        return textCifradoYEncodado
+        //return textCifrado.toString()
+    }
+
+    private fun descifrar(textoCifradoYEncodado : String, llaveEnString : String) : String {
+        println("Voy a descifrar $textoCifradoYEncodado")
+        val cipher = Cipher.getInstance(type)
+        cipher.init(Cipher.DECRYPT_MODE, getKey(llaveEnString))
+        val textCifradoYDencodado = Base64.getUrlDecoder().decode(textoCifradoYEncodado)
+        println("Texto cifrado $textCifradoYDencodado")
+        val textDescifradoYDesencodado = String(cipher.doFinal(textCifradoYDencodado))
+        println("Texto cifrado y desencodado $textDescifradoYDesencodado")
+        return textDescifradoYDesencodado
+    }
+
+    private fun getKey(llaveEnString : String): SecretKeySpec {
+        var llaveUtf8 = llaveEnString.toByteArray(Charsets.UTF_8)
+        val sha = MessageDigest.getInstance("SHA-1")
+        llaveUtf8 = sha.digest(llaveUtf8)
+        llaveUtf8 = llaveUtf8.copyOf(16)
+        return SecretKeySpec(llaveUtf8, "AES")
     }
 }
     /*

@@ -49,17 +49,18 @@ class MensajesController (private val mensajesRepository: MensajesRepository){
 
     //http://localhost:8083/borrar
     @GetMapping("borrar")
-    fun delete(): Boolean{
-        var borrado= false
+    fun delete() : Boolean{
+        var cont = 0
+        var bool = false
         mensajesRepository.findAll().forEach {
             if (it.mensaje == ""){
-                borrado = true
+                bool=true
+                cont+=1
                 mensajesRepository.delete(it)
-            }else{
-                borrado=false
             }
         }
-        return borrado
+        println("$bool - Se han borrado $cont registros")
+        return bool
     }
 
     //http://localhost:8083/Ultimos10
